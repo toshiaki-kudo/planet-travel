@@ -1,0 +1,668 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PLANET TRAVEL｜出発日未定の、宇宙旅行。</title>
+<meta name="description" content="月・火星・土星への旅を予約できる宇宙旅行サービス。ただし、出発日はまだ決まっていません。">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#08080B; --soft:#16161B; --line:#2A2A31;
+  --text:#F4F4F6; --sub:#9B9BA3;
+  --pin:#FF6A3D;      /* 人類の現在地を示すピン */
+  --r:16px;
+  --sans:"Noto Sans JP","Hiragino Sans","Hiragino Kaku Gothic ProN",sans-serif;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;scroll-padding-top:64px}
+body{margin:0;background:var(--bg);color:var(--text);font-family:var(--sans);font-size:16px;line-height:1.8;letter-spacing:.02em;font-feature-settings:"palt";-webkit-font-smoothing:antialiased;overflow-x:hidden}
+a{color:inherit}
+button,input,select{font:inherit;letter-spacing:inherit}
+img{display:block;max-width:100%}
+:focus-visible{outline:2px solid var(--text);outline-offset:3px;border-radius:4px}
+.wrap{max-width:1160px;margin:0 auto;padding-left:32px;padding-right:32px}
+@media (max-width:600px){.wrap{padding-left:16px;padding-right:16px}}
+.num{font-variant-numeric:tabular-nums}
+.sub{color:var(--sub)}
+.ph{background:var(--soft);overflow:hidden}
+.ph img{width:100%;height:100%;object-fit:cover}
+
+/* header */
+header.site{position:fixed;top:0;left:0;right:0;z-index:30;background:rgba(8,8,11,.72);backdrop-filter:saturate(180%) blur(16px);-webkit-backdrop-filter:saturate(180%) blur(16px);border-bottom:1px solid var(--line);transition:background .35s,border-color .35s}
+header.site.clear{background:transparent;backdrop-filter:none;-webkit-backdrop-filter:none;border-bottom-color:transparent}
+header.site.clear::before{content:"";position:absolute;inset:0 0 -40px;background:linear-gradient(180deg,rgba(8,8,11,.55),rgba(8,8,11,0));pointer-events:none;z-index:-1}
+#app{padding-top:64px}
+header.site .wrap{display:flex;align-items:center;justify-content:space-between;height:64px}
+.logo{display:inline-flex;align-items:center;gap:10px;text-decoration:none}
+.logo svg{width:22px;height:22px;flex:none;overflow:visible}
+.logo .wm{font-weight:700;font-size:14px;letter-spacing:.28em;line-height:1}
+.logo .dot{color:var(--pin);letter-spacing:0}
+.nav a.cta{padding:8px 16px;border-radius:999px;box-shadow:inset 0 0 0 1px rgba(244,244,246,.35)}
+.nav a.cta:hover{color:var(--text);box-shadow:inset 0 0 0 1px var(--text)}
+.nav a{text-decoration:none;font-size:14px;margin-left:28px;color:var(--text)}
+.nav a:hover{color:var(--sub)}
+.badge{display:inline-block;min-width:18px;margin-left:6px;padding:0 5px;border-radius:9px;background:var(--text);color:var(--bg);font-size:11px;font-weight:700;line-height:18px;text-align:center}
+.badge[hidden]{display:none}
+@media (max-width:600px){.nav a.wide{display:none}}
+
+.btn{display:inline-flex;align-items:center;justify-content:center;border:0;cursor:pointer;border-radius:12px;padding:14px 24px;font-weight:700;font-size:15px;text-decoration:none;white-space:nowrap}
+.btn.dark{background:var(--text);color:var(--bg)}
+.btn.dark:hover{background:#d9d9de}
+.btn.light{background:var(--soft);color:var(--text)}
+.btn.light:hover{background:#222229}
+.more{font-size:15px;font-weight:700;text-decoration:underline;text-underline-offset:4px}
+
+/* home hero */
+.hero{position:relative;margin-top:-64px;height:100svh;min-height:560px;max-height:1000px;display:flex;align-items:flex-end;overflow:hidden}
+.hero .hz{position:absolute;inset:0;overflow:hidden}
+.hero .hz .sd{position:absolute;inset:0;opacity:0;transition:opacity 1.6s ease}
+.hero .hz .sd.on{opacity:1}
+.hero .hz img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transform-origin:55% 55%;will-change:transform}
+.hind{position:absolute;right:32px;bottom:64px;z-index:3;display:flex;gap:14px}
+.hind span{display:flex;flex-direction:column;gap:8px;width:72px;font-size:12px;color:rgba(244,244,246,.6);transition:color .4s}
+.hind span.on{color:var(--text)}
+.hind i{display:block;height:2px;background:rgba(244,244,246,.25);border-radius:1px;overflow:hidden}
+.hind i::after{content:"";display:block;height:100%;width:0;background:var(--text)}
+.hind span.on i::after{animation:hfill var(--d,6.5s) linear forwards}
+.hind span.past i::after{width:100%}
+@keyframes hfill{to{width:100%}}
+@media (max-width:860px){.hind{right:16px;bottom:auto;top:84px;gap:8px}.hind span{width:36px}.hind b{display:none}}
+@media (prefers-reduced-motion:reduce){.hind{display:none}}
+.hero::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,rgba(8,8,11,.55),rgba(8,8,11,0) 55%),linear-gradient(180deg,rgba(8,8,11,0) 55%,var(--bg))}
+.hero .inner{position:relative;z-index:2;width:100%;padding-bottom:64px;display:grid;grid-template-columns:1fr;gap:20px;justify-items:start}
+.hero h1{font-weight:900;font-size:clamp(34px,4.8vw,68px);line-height:1.22;letter-spacing:-.01em;margin:0;text-shadow:0 2px 24px rgba(0,0,0,.35)}
+.hero h1 span{display:block}
+.hero p{margin:0 0 6px;font-size:16px;color:rgba(244,244,246,.82)}
+.hero p b{color:var(--text);font-weight:700}
+.hero .btn{margin-top:14px;border-radius:999px;padding:14px 28px}
+@media (max-width:860px){.hero .inner{grid-template-columns:1fr;gap:12px;padding-bottom:40px}}
+
+/* section heads */
+section.block{padding-top:120px}
+.sh{display:flex;justify-content:space-between;align-items:end;gap:24px;margin-bottom:28px;flex-wrap:wrap}
+.sh h2{font-weight:900;font-size:clamp(26px,3.2vw,40px);line-height:1.35;letter-spacing:-.005em;margin:0}
+.sh p{margin:6px 0 0;color:var(--sub);max-width:34em}
+
+/* destination cards */
+.cards{display:grid;grid-template-columns:repeat(3,1fr);gap:28px}
+.card{text-decoration:none;display:block}
+.card .ph{border-radius:var(--r);aspect-ratio:4/5}
+.card .ph img{transition:transform .6s ease}
+.card:hover .ph img{transform:scale(1.03)}
+.card .row1{display:flex;justify-content:space-between;align-items:baseline;margin-top:14px}
+.card h3{font-size:22px;font-weight:900;margin:0}
+.card .era{font-size:13px;color:var(--sub)}
+.card p{margin:2px 0 0;font-size:15px;color:var(--sub);line-height:1.65}
+.card .price{margin-top:6px;font-size:15px;color:var(--text)}
+.card .price b{font-weight:700}
+@media (max-width:860px){.cards{grid-template-columns:1fr;gap:40px}.card .ph{aspect-ratio:4/3}}
+
+/* feature spread */
+.spread{display:grid;grid-template-columns:1.25fr 1fr;gap:56px;align-items:center}
+.spread .ph{border-radius:24px;aspect-ratio:4/3}
+.spread .k{font-size:13px;font-weight:700;margin:0 0 14px}
+.spread h2{font-weight:900;font-size:clamp(28px,3.6vw,46px);line-height:1.35;margin:0 0 20px}
+.spread p{margin:0 0 24px;color:var(--sub)}
+@media (max-width:860px){.spread{grid-template-columns:1fr;gap:24px}}
+
+/* reach */
+.reach{border-top:1px solid var(--text)}
+.reach .rw{display:grid;grid-template-columns:110px 170px 1fr;gap:20px;align-items:center;padding:22px 0;border-bottom:1px solid var(--line)}
+.reach .rw.hd{padding:12px 0;font-size:12px;color:var(--sub)}
+.reach .rw.hd .sc{position:relative;height:20px}
+.reach .rw.hd .sc span{position:absolute;bottom:0;transform:translateX(-50%);text-align:center;line-height:1.35;white-space:nowrap}
+.reach .rw.hd .sc .sl{font-size:12px;color:var(--sub)}
+.reach .rw.hd .sc .sl.last{transform:translateX(calc(-100% + 10px))}
+.reach .bar .tk{position:absolute;top:50%;width:8px;height:8px;margin:-4px 0 0 -4px;border-radius:50%;background:#3A3A42;z-index:1}
+.reach .bar .tk.on{background:#FFD2C2}
+.reach .nm{font-size:22px;font-weight:900}
+.reach .ds{color:var(--sub);font-size:14px}
+.reach .bar,.reach .rw.hd .sc{margin-right:24px}
+.reach .bar{position:relative;height:2px;background:#2A2A31;border-radius:1px}
+.reach .bar::after{content:"";position:absolute;right:-11px;top:-10px;width:22px;height:22px;border-radius:50%;border:1.5px dashed rgba(244,244,246,.55);box-sizing:border-box;background:var(--bg)}
+.reach .bar::before{content:"";position:absolute;right:-4px;top:-3px;width:8px;height:8px;border-radius:50%;background:rgba(244,244,246,.85);box-shadow:0 0 10px rgba(244,244,246,.35);z-index:1}
+@media (prefers-reduced-motion:no-preference){.reach .bar::after{animation:orbit 14s linear infinite}}
+@keyframes orbit{to{transform:rotate(360deg)}}
+.reach .bar .tk{position:absolute;top:50%;width:5px;height:5px;margin:-2.5px 0 0 -2.5px;border-radius:50%;background:#3A3A42;z-index:1}
+.reach .bar .tk.on{background:rgba(255,190,165,.9)}
+.reach .bar i{position:absolute;left:0;top:-1px;height:4px;border-radius:2px;background:linear-gradient(90deg,rgba(255,106,61,0),rgba(255,106,61,.55) 45%,var(--pin));box-shadow:0 0 12px rgba(255,106,61,.45)}
+.reach .bar i::after{content:"";position:absolute;right:-6px;top:-4px;width:12px;height:12px;border-radius:50%;background:#fff;box-shadow:0 0 0 3px rgba(255,106,61,.55),0 0 18px 6px rgba(255,106,61,.75);z-index:2}
+.reach .bar i::before{content:"";position:absolute;right:-14px;top:-12px;width:28px;height:28px;border-radius:50%;box-shadow:0 0 0 1.5px var(--pin);opacity:0;z-index:2}
+@media (prefers-reduced-motion:no-preference){.reach .bar i::before{animation:ping 2.6s cubic-bezier(.2,.6,.3,1) infinite}}
+@keyframes ping{0%{transform:scale(.4);opacity:.9}80%,100%{transform:scale(1.6);opacity:0}}
+.reach .st{display:none;font-size:13px;color:var(--sub)}
+@media (max-width:700px){.reach .rw{grid-template-columns:64px 1fr;gap:10px 12px}.reach .bar{grid-column:1/-1}.reach .st{display:block;grid-column:1/-1;margin-top:-4px}.reach .rw.hd>span:not(.sc){display:none}.reach .rw.hd .sc{grid-column:1/-1;height:30px}.reach .rw.hd .sc .sl{font-size:10px;white-space:normal;width:4.6em;line-height:1.3}.reach .rw.hd .sc .sl.last{transform:translateX(calc(-100% + 8px));text-align:right}}
+/* about */
+.about{display:grid;grid-template-columns:1fr 1.2fr;gap:56px;padding-top:56px;border-top:1px solid var(--line)}
+.about h2{font-weight:900;font-size:clamp(24px,2.8vw,34px);line-height:1.45;margin:0}
+.about p{margin:0 0 1em}
+@media (max-width:760px){.about{grid-template-columns:1fr;gap:16px}}
+
+/* planet page */
+.ptitle{padding-top:36px}
+.back{display:inline-flex;align-items:center;gap:10px;font-size:14px;font-weight:500;color:var(--text);text-decoration:none}
+.back i{display:grid;place-items:center;width:34px;height:34px;border-radius:50%;background:var(--soft);font-style:normal;font-size:18px;line-height:1;transition:background .2s}
+.back:hover i{background:#25252c}
+.ptitle h1{font-weight:900;font-size:clamp(30px,3.8vw,44px);line-height:1.3;margin:6px 0 4px}
+.ptitle .meta{font-size:15px;color:var(--sub)}
+.ptitle .meta b{color:var(--text)}
+.gal{display:grid;grid-template-columns:2fr 1fr;grid-template-rows:240px 240px;gap:8px;border-radius:20px;overflow:hidden;margin-top:24px}
+.gal .ph:first-child{grid-row:span 2}
+.gal .ph{cursor:zoom-in}
+.gal .ph img{transition:transform .5s ease,filter .3s}
+.gal .ph:hover img{transform:scale(1.03);filter:brightness(1.08)}
+.gal .ph:focus-visible{outline:2px solid var(--text);outline-offset:-4px}
+.lb{position:fixed;inset:0;z-index:100;background:rgba(5,5,8,.62);backdrop-filter:blur(18px) saturate(120%);-webkit-backdrop-filter:blur(16px) saturate(120%);display:grid;grid-template-columns:96px minmax(0,1fr) 96px;align-items:center;opacity:0;transition:opacity .28s ease}
+.lb.on{opacity:1}
+.lb figcaption,.lb .lb-c,.lb button{transition:opacity .3s ease .12s;opacity:0}
+.lb.on figcaption,.lb.on .lb-c,.lb.on button{opacity:1}
+@media (prefers-reduced-motion:reduce){.lb,.lb figcaption,.lb .lb-c,.lb button{transition:none}}
+.lb[hidden]{display:none}
+.lb figure{margin:0 auto;display:grid;justify-items:start;gap:18px;width:fit-content;min-width:0}
+.lb img{max-width:min(920px,calc(100vw - 192px));max-height:68svh;border-radius:14px;object-fit:contain;box-shadow:0 30px 90px rgba(0,0,0,.65);will-change:transform}
+.lb figcaption{width:0;min-width:100%;display:flex;justify-content:space-between;align-items:flex-start;gap:24px}
+.lb figcaption .t{display:block;font-size:17px;font-weight:500;letter-spacing:.03em;line-height:1.5}
+.lb figcaption .d{display:block;margin-top:4px;font-size:13px;color:var(--sub);line-height:1.7}
+.lb button{background:rgba(255,255,255,.08);border:0;color:var(--text);width:44px;height:44px;border-radius:50%;font-size:22px;line-height:1;cursor:pointer;justify-self:center}
+.lb button:hover{background:rgba(255,255,255,.16)}
+.lb .lb-x{position:absolute;top:16px;right:16px}
+.lb .lb-c{font-size:13px;color:var(--sub);white-space:nowrap;padding-top:3px;letter-spacing:.08em}
+@media (max-width:640px){.lb{grid-template-columns:1fr;padding:0 12px}.lb img{max-width:calc(100vw - 24px)}.lb .lb-p,.lb .lb-n{position:absolute;bottom:24px}.lb .lb-p{left:calc(50% - 56px)}.lb .lb-n{right:calc(50% - 56px)}}
+@media (max-width:760px){.gal{grid-template-columns:1fr;grid-template-rows:280px;border-radius:14px}.gal .ph:not(:first-child){display:none}}
+
+.layout{display:grid;grid-template-columns:minmax(0,1fr) 380px;gap:72px;align-items:start;margin-top:40px}
+@media (max-width:1000px){.layout{grid-template-columns:1fr;gap:40px}}
+.sec{padding:40px 0;border-bottom:1px solid var(--line)}
+.sec:first-child{padding-top:0}
+.sec h2{font-size:22px;font-weight:900;margin:0 0 6px}
+.sec .lead{margin:0 0 20px;color:var(--sub);font-size:15px}
+.intro p{margin:0;font-size:17px;line-height:1.9}
+.facts{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin:28px 0 0}
+.facts dt{font-size:12px;color:var(--sub)}
+.facts dd{margin:2px 0 0;font-weight:700;font-size:16px;line-height:1.5}
+.facts dd small{display:block;font-weight:400;font-size:12px;color:var(--sub)}
+@media (max-width:640px){.facts{grid-template-columns:1fr 1fr}}
+
+.exps{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+@media (max-width:640px){.exps{grid-template-columns:1fr}}
+.exp{display:block;cursor:pointer;position:relative}
+.exp input{position:absolute;opacity:0}
+.exp .ph{border-radius:12px;aspect-ratio:1/1;position:relative}
+.exp .chk{position:absolute;top:10px;right:10px;width:26px;height:26px;border-radius:50%;background:rgba(8,8,11,.55);box-shadow:inset 0 0 0 1.5px rgba(255,255,255,.8);transition:background .15s}
+.exp .chk::after{content:"";position:absolute;left:9px;top:6px;width:6px;height:11px;border:solid var(--bg);border-width:0 2px 2px 0;transform:rotate(45deg);opacity:0}
+.exp input:checked ~ .ph .chk{background:var(--text);box-shadow:none}
+.exp input:checked ~ .ph .chk::after{opacity:1}
+.exp input:checked ~ .ph{outline:2px solid var(--text);outline-offset:3px}
+.exp input:focus-visible ~ .ph{outline:2px solid var(--text);outline-offset:3px}
+.exp strong{display:block;margin-top:10px;font-size:15px;line-height:1.5}
+.exp p{margin:2px 0 0;font-size:13px;color:var(--sub);line-height:1.65}
+
+.rooms{display:grid;gap:12px}
+.room{display:grid;grid-template-columns:20px 1fr auto;gap:2px 14px;align-items:start;padding:18px 20px;border:1px solid var(--line);border-radius:12px;cursor:pointer}
+.room:hover{border-color:#55555e}
+.room:has(input:checked){border:2px solid var(--text);padding:17px 19px}
+.room input{margin:4px 0 0;width:18px;height:18px;accent-color:var(--text)}
+.room strong{font-size:16px}
+.room .pr{font-size:15px;white-space:nowrap;text-align:right}
+.room .pr small{display:block;color:var(--sub);font-size:12px}
+.room p{grid-column:2/4;margin:0;font-size:14px;color:var(--sub);line-height:1.7}
+
+/* しおり */
+.tl{display:flex;align-items:center;height:14px;margin:6px 0 8px}
+.tl .t{height:2px;background:rgba(244,244,246,.16)}
+.tl .t:first-child{background:linear-gradient(90deg,rgba(244,244,246,.04),rgba(244,244,246,.22))}
+.tl .t:last-child{background:linear-gradient(90deg,rgba(244,244,246,.22),rgba(244,244,246,.04))}
+.tl .s{position:relative;height:4px;border-radius:2px;background:var(--pin);min-width:8px;box-shadow:0 0 12px rgba(255,106,61,.6)}
+.tl .s::after{content:"";position:absolute;top:-4px;left:50%;width:12px;height:12px;margin-left:-6px;border-radius:50%;background:#fff;box-shadow:0 0 0 3px rgba(255,106,61,.55),0 0 18px 6px rgba(255,106,61,.7)}
+.tll{display:flex;justify-content:space-between;font-size:12px;color:var(--sub)}
+.tln{font-size:14px;margin:10px 0 18px}
+.tln b{font-weight:900}
+.days{list-style:none;margin:0;padding:0}
+.days li{display:grid;grid-template-columns:72px 1fr;gap:14px;padding:12px 0;border-top:1px solid var(--line)}
+.days .w{font-size:13px;color:var(--sub);font-weight:700}
+.days .d{font-size:15px;line-height:1.6}
+.days .d small{display:block;color:var(--sub);font-size:13px}
+.days li.x .d{display:grid;grid-template-columns:52px 1fr;gap:12px;align-items:center}
+.days li.x img{width:52px;height:52px;border-radius:8px;object-fit:cover}
+.days li.warn .d{color:var(--pin)}
+
+/* 人類の現在地 */
+.track{list-style:none;margin:28px 0 0;padding:0;display:grid;grid-template-columns:repeat(6,1fr)}
+.track li{position:relative;padding-top:30px;font-size:12px;color:var(--sub);text-align:center;line-height:1.45}
+.track li::before{content:"";position:absolute;top:11px;left:50%;width:6px;height:6px;margin-left:-3px;border-radius:50%;background:#3A3A42;z-index:1}
+.track li::after{content:"";position:absolute;top:13px;left:50%;width:100%;height:2px;background:#2A2A31}
+.track li:last-child::after{display:none}
+.track li.done{color:var(--text)}
+.track li.done::before{background:rgba(255,190,165,.9)}
+.track li.done::after{top:12px;height:4px;border-radius:2px;background:var(--pin);box-shadow:0 0 12px rgba(255,106,61,.45)}
+.track li.done:first-child::after{background:linear-gradient(90deg,rgba(255,106,61,.25),var(--pin))}
+.track li.now::after{top:13px;height:2px;background:#2A2A31;box-shadow:none}
+.track li.now::before{top:8px;width:12px;height:12px;margin-left:-6px;background:#fff;box-shadow:0 0 0 3px rgba(255,106,61,.55),0 0 18px 6px rgba(255,106,61,.75);z-index:2}
+.track .pg{position:absolute;top:0;left:50%;width:28px;height:28px;margin-left:-14px;border-radius:50%;box-shadow:0 0 0 1.5px var(--pin);opacity:0;z-index:2}
+@media (prefers-reduced-motion:no-preference){.track .pg{animation:ping 2.6s cubic-bezier(.2,.6,.3,1) infinite}}
+.track li.goal{color:var(--text)}
+.track li.goal::before{top:3px;width:22px;height:22px;margin-left:-11px;border-radius:50%;border:1.5px dashed rgba(244,244,246,.55);box-sizing:border-box;background:var(--bg)}
+@media (prefers-reduced-motion:no-preference){.track li.goal::before{animation:orbit 14s linear infinite}}
+.track .gd{position:absolute;top:10px;left:50%;width:8px;height:8px;margin-left:-4px;border-radius:50%;background:rgba(244,244,246,.85);box-shadow:0 0 10px rgba(244,244,246,.35);z-index:2}
+.track .here{position:absolute;top:-20px;left:50%;transform:translateX(-50%);color:var(--pin);font-size:11px;font-weight:900;white-space:nowrap}
+.history{list-style:none;margin:28px 0 0;padding:0}
+.history li{display:grid;grid-template-columns:72px 1fr;gap:14px;padding:10px 0;border-top:1px solid var(--line);font-size:15px}
+.history b{font-weight:700}
+.history li.next b{color:var(--pin)}
+@media (max-width:640px){.track{grid-template-columns:repeat(6,1fr)}.track li{font-size:0}.track .here{font-size:11px}}
+
+/* booking card */
+.bk{position:sticky;top:88px;border:1px solid var(--line);border-radius:16px;padding:24px;background:var(--soft);box-shadow:0 10px 40px rgba(0,0,0,.5)}
+.bk .pp{font-size:22px;font-weight:900}
+.bk .pp small{font-size:14px;font-weight:400;color:var(--sub)}
+.bk .dep{font-size:14px;margin:2px 0 18px;color:var(--sub)}
+.bk .dep b{color:var(--pin)}
+.box{border:1px solid #3E3E46;border-radius:10px;overflow:hidden;margin-bottom:14px}
+.box .two{display:grid;grid-template-columns:1fr 1fr}
+.box .f{padding:8px 12px;border-top:1px solid #3E3E46}
+.box .two .f+.f{border-left:1px solid #3E3E46}
+.box>.f:first-child,.box .two:first-child .f{border-top:0}
+.box label{display:block;font-size:11px;font-weight:700;letter-spacing:.04em}
+.box select option{background:#16161B}
+.box input,.box select{width:100%;border:0;padding:2px 0;font-size:15px;background:transparent;color:var(--text);outline:none}
+.bk .btn{width:100%;padding:15px}
+.bk .free{text-align:center;font-size:13px;color:var(--sub);margin:10px 0 18px}
+.brk div{display:flex;justify-content:space-between;gap:12px;font-size:15px;padding:3px 0}
+.brk div span:first-child{color:var(--sub);text-decoration:underline;text-decoration-color:#44444c;text-underline-offset:3px}
+.brk .tot{border-top:1px solid var(--line);margin-top:12px;padding-top:14px;font-weight:900}
+.brk .tot span:first-child{color:var(--text);text-decoration:none}
+.err{color:var(--pin);font-size:13px;margin:8px 0 0}
+
+.nextp{display:grid;grid-template-columns:200px 1fr;gap:24px;align-items:center;text-decoration:none;margin-top:40px}
+.nextp .ph{border-radius:12px;aspect-ratio:4/3}
+.nextp small{color:var(--sub)}
+.nextp b{display:block;font-size:24px;font-weight:900}
+
+/* pass */
+.done{padding-top:56px;text-align:center}
+.done h1{font-weight:900;font-size:clamp(28px,4vw,44px);margin:0 0 8px}
+.done>p{color:var(--sub);margin:0 auto 36px;max-width:32em}
+.pass{max-width:860px;margin:0 auto;text-align:left;border-radius:20px;overflow:hidden;border:1px solid var(--line);background:var(--soft);box-shadow:0 20px 60px rgba(0,0,0,.6)}
+.pass .ph{height:220px}
+.pass .body{display:grid;grid-template-columns:1fr 220px}
+.pass .main{padding:26px 28px}
+.pass .od{display:flex;align-items:end;gap:18px;margin-bottom:22px}
+.pass .city{font-weight:900;font-size:clamp(26px,3.6vw,36px);line-height:1.1}
+.pass .city small{display:block;font-weight:400;font-size:12px;color:var(--sub);margin-bottom:4px}
+.pass .arc{flex:1;height:2px;margin-bottom:12px;background:repeating-linear-gradient(90deg,var(--text) 0 6px,transparent 6px 11px)}
+.pass dl{display:grid;grid-template-columns:repeat(3,1fr);gap:14px 18px;margin:0}
+.pass dt{font-size:12px;color:var(--sub)}
+.pass dd{margin:2px 0 0;font-weight:700;font-size:15px;line-height:1.45;overflow-wrap:anywhere}
+.pass dd.wait{color:var(--pin)}
+.pass .stub{padding:26px 24px;border-left:2px dashed #3E3E46;background:#1C1C22}
+.pass .stub dl{grid-template-columns:1fr}
+.pass .code{font-weight:900;font-size:20px;letter-spacing:.06em}
+.pass .waiting{margin-top:22px;padding:16px 18px;border-radius:12px;background:var(--bg);font-size:14px}
+.pass .waiting .track{margin-top:30px}
+.pass .waiting .track li{font-size:0}
+@media (max-width:720px){.pass .body{grid-template-columns:1fr}.pass .stub{border-left:0;border-top:2px dashed var(--line)}.pass dl{grid-template-columns:1fr 1fr}}
+.done-actions{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin:32px 0 0}
+.cancel{margin:36px 0 0;text-align:center}
+.cancel .q{margin:0 0 14px;font-size:15px}
+.cancel .acts{display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
+.lnk{background:none;border:0;padding:6px;color:var(--sub);font-size:14px;text-decoration:underline;text-underline-offset:4px;cursor:pointer}
+.lnk:hover{color:var(--text)}
+.notice{margin:0 0 20px;padding:14px 18px;border-radius:12px;background:var(--soft);font-size:14px}
+
+.trips{display:grid;gap:12px;margin-top:28px}
+.trip{display:grid;grid-template-columns:96px 1fr auto;gap:18px;align-items:center;padding:12px;border:1px solid var(--line);border-radius:14px;text-decoration:none}
+.trip:hover{border-color:#55555e}
+.trip img{width:96px;height:72px;border-radius:10px;object-fit:cover}
+.trip strong{display:block;font-size:16px}
+.trip small{color:var(--sub);font-size:13px}
+.trip .st{font-size:13px;font-weight:700;color:var(--pin);padding-right:8px}
+.empty{margin-top:28px;padding:48px;border:1px dashed #3E3E46;border-radius:16px;text-align:center;color:var(--sub)}
+.empty .btn{margin-top:16px}
+
+footer.site{margin-top:140px;padding:32px 0 48px;border-top:1px solid var(--line);color:var(--sub);font-size:12px}
+footer.site .wrap{display:flex;justify-content:space-between;align-items:baseline;gap:24px;flex-wrap:wrap}
+footer.site .cp{font-size:12px;letter-spacing:.06em;white-space:nowrap}
+footer.site p{margin:0;max-width:44em;line-height:1.7}
+@media (max-width:700px){footer.site .wrap{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<header class="site">
+  <div class="wrap">
+    <a class="logo" href="#/" aria-label="PLANET TRAVEL トップへ">
+      <span class="wm">PLANET TRAVEL<span class="dot">.</span></span>
+    </a>
+    <nav class="nav" aria-label="メイン">
+      <a class="wide" href="#/#dest">旅行先</a>
+      <a class="wide" href="#/#reach">人類の現在地</a>
+      <a class="cta" href="#/trips">予約の確認<span class="badge" id="cnt" hidden></span></a>
+    </nav>
+  </div>
+</header>
+<main id="app"></main>
+<footer class="site">
+  <div class="wrap">
+    <p>架空の宇宙旅行予約サービスです。実際の予約や支払いは発生しません。画像は生成AIによるイメージ、探査の情報は2026年11月時点の公開情報にもとづいています。</p>
+    <small class="cp">© 2026 PLANET TRAVEL</small>
+  </div>
+</footer>
+
+<script>
+/* 作者メモ：おすすめを表示したいときは id（moon / mars / saturn）とひとことを入れてください */
+const AUTHOR_PICK = null; // 例：{ id: 'saturn', note: '環を眺めながら食事がしたい。' }
+
+const SCALE=['探査機が接近','探査機が周回','探査機が着陸','人が周回','人が着陸','旅行できる'];
+const SLIDES=[
+  {k:'hero',t:'地球軌道',pos:'70% 50%',alt:'宇宙船のラウンジから、光が差しこむ地球の地平線を眺める旅行者'},
+  {k:'moon-cover',t:'月',pos:'50% 60%',alt:'地球が浮かぶ月面の町を歩く旅行者'},
+  {k:'mars-cover',t:'火星',pos:'50% 50%',alt:'夕暮れの火星のドーム都市'},
+  {k:'saturn-cover',t:'土星',pos:'50% 45%',alt:'土星と環を眺めるリゾートのダイニング'}];
+let HT=null,HI=0;
+function heroGo(i){const sd=document.querySelectorAll('.hero .sd'),hs=document.querySelectorAll('.hind span');if(!sd.length)return;
+  sd.forEach((s,k)=>s.classList.toggle('on',k===i));hs.forEach((h,k)=>{h.classList.toggle('on',k===i);h.classList.toggle('past',k<i)});
+  const im=sd[i].querySelector('img');im.animate([{transform:'scale(1)'},{transform:'scale(1.14)'}],{duration:8200,easing:'linear',fill:'forwards'});HI=i}
+function heroStart(){clearInterval(HT);if(matchMedia('(prefers-reduced-motion: reduce)').matches)return;heroGo(0);HT=setInterval(()=>heroGo((HI+1)%SLIDES.length),6500)}
+const STAGES=['探査機が近くを通過','探査機が周回','探査機が着陸','人が周回','人が着陸','観光旅行'];
+const P=[
+ {id:'moon',name:'月',era:'人が行ったことがある',
+  catch:'いちばん近い、もうひとつの世界。',
+  intro:'地球から約38万km、3日の旅。低いドームが並ぶ月面の町では、窓を見上げればいつも地球が浮かんでいます。2026年、人類は半世紀ぶりに月のそばまで行って帰ってきました。いちばん「もうすぐ」な旅先です。',
+  oneway:'約3日',days:3,dist:'約38万km',facts:[['片道','約3日'],['重力','地球の0.17倍'],['1日の長さ','約29.5日','昼と夜が約2週間ずつ'],['気温','−170〜120℃']],
+  fare:9800000,stage:4,reachSt:'人が着陸した',
+  cruise:'地球を離れて約1日、窓の外の地球が手のひらほどの大きさに',
+  exps:[
+   {img:'moon-cover',n:'月面の町に泊まる',d:'低いドームが並ぶ小さな町。見上げれば、いつも地球。'},
+   {img:'moon-tranquility',n:'「最初の一歩」の記念館',d:'1969年、人類が初めて降り立った静かの海に建つ記念館。'},
+   {img:'moon-southpole',n:'南極クレーター・ローバーツアー',d:'光が届かないクレーターの底には、氷が眠っているとされます。'}],
+  rooms:[{n:'ルナ・ヴィレッジ・イン',d:'町の中心にある小さな宿。共用ラウンジから地球を眺められます。',p:380000},{n:'アースビュー・スイート',d:'天井まで続く窓から、ベッドに寝転んだまま地球が見える客室。',p:720000}],
+  history:[{y:'1969',t:'アポロ11号で人類が初めて月面に立つ'},{y:'1972',t:'アポロ17号。ここまでに12人が月面を歩いた'},{y:'2024',t:'日本の探査機SLIMが月面着陸に成功'},{y:'2026',t:'アルテミスIIで4人が月を周回し、地球へ帰還'}],
+  next:{y:'2028',t:'アルテミスIVで、アポロ以来の有人着陸を目指す'}},
+ {id:'mars',name:'火星',era:'探査車が走っている',
+  catch:'夕焼けが青い、開拓の星。',
+  intro:'片道およそ7か月。透明なドームの中に緑の庭が広がる街では、夕暮れになると空が青く染まります。探査車は今も走り続けていますが、人が降り立つ日はまだ誰にも決まっていません。',
+  oneway:'約7か月',days:210,dist:'最接近 約5,500万km',facts:[['片道','約7か月'],['重力','地球の0.38倍'],['1日の長さ','約24時間40分','地球とほぼ同じ'],['気温','平均 約−60℃']],
+  fare:128000000,stage:2,reachSt:'探査機が着陸した',
+  cruise:'地球が明るい星のひとつになり、到着前には赤い円盤が日に日に大きくなる',
+  exps:[
+   {img:'mars-cover',n:'ドーム都市に暮らすように泊まる',d:'緑の庭を抱いた透明なドームの街。夕焼けは青く染まります。'},
+   {img:'mars-olympus',n:'オリンポス山 山頂駅',d:'高さ約22km。太陽系最大級の火山の火口の縁まで、ロープウェイで。'},
+   {img:'mars-valles',n:'マリネリス峡谷 ガラスの橋',d:'長さ約4,000km、深さ最大約7km。朝霧の大峡谷を歩いて渡ります。'}],
+  rooms:[{n:'ドームシティ・ホテル',d:'庭園ドームに面した客室。夕暮れには窓の外が青く染まります。',p:520000},{n:'オリンポス・サミット・ロッジ',d:'山頂駅に併設されたロッジ。昼でも暗い空に、星が見えます。',p:880000}],
+  history:[{y:'1965',t:'マリナー4号が初めて火星に接近し、写真を送る'},{y:'1976',t:'バイキング1号が着陸に成功'},{y:'2021',t:'パーサヴィアランスが着陸。ヘリ「インジェニュイティ」が地球以外で初めて飛行'}],
+  next:{y:'未定',t:'人を送る計画は、まだ構想の段階です'}},
+ {id:'saturn',name:'土星',era:'探査機が訪れた',
+  catch:'環を眺めながら、夕食を。',
+  intro:'片道6〜7年。土星をめぐるリゾートのダイニングから、窓いっぱいの環を眺める。濃い大気の衛星タイタンでは、翼をつけて空を飛ぶ。太陽系でいちばん遠く、いちばん「夢」に近い旅先です。',
+  oneway:'約6〜7年',days:2400,dist:'最接近 約12億km',facts:[['片道','約6〜7年'],['重力','地球の1.07倍','雲の上端で'],['1日の長さ','約10時間30分'],['気温','約−140℃','雲の上端で']],
+  fare:820000000,stage:1,reachSt:'探査機が周回した',
+  cruise:'木星の重力を借りて加速し、太陽がだんだん小さな明るい星に',
+  exps:[
+   {img:'saturn-cover',n:'環を眺めるディナー',d:'リゾートのダイニングから、窓いっぱいの土星と環を。'},
+   {img:'saturn-titan',n:'タイタンの空を飛ぶ',d:'濃い大気と弱い重力。翼をつければ人が飛べるかもしれないと言われます。'},
+   {img:'saturn-enceladus',n:'エンケラドゥスの間欠泉',d:'宇宙へ噴き上がる氷のしぶき。地下には海があると考えられています。'}],
+  rooms:[{n:'リングサイド・リゾート',d:'環と同じ面をめぐる周回リゾート。ダイニングとスパつき。',p:700000},{n:'リング・ビュー・スイート',d:'環が真横に一本の線になる日も、斜めに広がる日も。窓が主役の客室。',p:1480000}],
+  history:[{y:'1979',t:'パイオニア11号が初めて土星に接近'},{y:'2004',t:'カッシーニが周回を始める'},{y:'2005',t:'ホイヘンスが衛星タイタンに着陸'},{y:'2017',t:'カッシーニが13年の観測を終える'}],
+  next:{y:'2028',t:'ドラゴンフライが打ち上げ予定。2034年にタイタン到着を目指す'}}
+];
+const byId=Object.fromEntries(P.map(p=>[p.id,p]));
+const $=(s,e=document)=>e.querySelector(s);
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const IMGV='2';
+const img=(k,s)=>`img/${k}${s?'-s':''}.jpg?v=${IMGV}`;
+const yen=n=>'¥'+n.toLocaleString('ja-JP');
+function yenJ(n){if(n>=1e8){const o=Math.floor(n/1e8),m=Math.round(n%1e8/1e4);return o+'億'+(m?m.toLocaleString('ja-JP')+'万':'')+'円'}return Math.round(n/1e4).toLocaleString('ja-JP')+'万円'}
+function dur(d){if(d<60)return '約'+d+'日';if(d<730)return '約'+Math.round(d/30)+'か月';return '約'+(d/365).toFixed(1).replace(/\.0$/,'')+'年'}
+function track(p){return `<ol class="track" aria-label="人類の現在地：${STAGES[p.stage]}まで到達">`+STAGES.map((s,i)=>{let c=i<p.stage?'done':i===p.stage?'done now':'';if(i===5)c='goal';return `<li class="${c}">${i===p.stage?'<span class="pg"></span><span class="here">いまここ</span>':''}${i===5?'<span class="gd"></span>あなたの旅':s}</li>`}).join('')+'</ol>'}
+const KEY='planet-travel:v3';let mem=[];
+const load=()=>{try{return JSON.parse(localStorage.getItem(KEY)||'[]')}catch(e){return mem}};
+const save=l=>{mem=l;try{localStorage.setItem(KEY,JSON.stringify(l))}catch(e){}};
+function badge(){const n=load().length,b=$('#cnt');b.hidden=!n;b.textContent=n}
+
+/* ---------- home ---------- */
+function home(){
+  return `
+  <section class="hero">
+    <div class="hz">${SLIDES.map((s,i)=>`<div class="sd${i?'':' on'}"><img src="${img(s.k)}" alt="${s.alt}" style="object-position:${s.pos}"></div>`).join('')}</div>
+    <div class="wrap inner">
+      <h1><span>出発日未定の、</span><span>宇宙旅行。</span></h1>
+      <div><p>月・火星・土星への旅を予約できる、宇宙旅行サービスです。</p><p>人類の技術が追いついたら、ご案内します。</p><a class="btn dark" href="#/#dest">旅行先を見る</a></div>
+    </div>
+  </section>
+
+  <section class="block wrap" id="dest">
+    <div class="sh"><div><h2>旅行先</h2><p>地球から近い順に並べています。</p></div></div>
+    <div class="cards">${P.map(p=>`
+      <a class="card" href="#/p/${p.id}">
+        <div class="ph"><img src="${img(p.exps[0].img,1)}" alt="${p.exps[0].n}" loading="lazy"></div>
+        <div class="row1"><h3>${p.name}</h3></div>
+        <p>${p.catch}</p>
+        <p>片道 ${p.oneway}・出発日 未定</p>
+        <p class="price"><b class="num">${yen(p.fare)}</b> 往復／1名</p>
+      </a>`).join('')}
+    </div>
+  </section>
+
+  <section class="block wrap">
+    <div class="spread">
+      <div class="ph"><img src="${img('saturn-titan')}" alt="タイタンの湖の上を、翼をつけて飛ぶ人たち" loading="lazy"></div>
+      <div>
+        <p class="k">今月の特集　土星・タイタン</p>
+        <h2>濃い大気の星では、人は翼で飛べるかもしれない。</h2>
+        <p>土星の衛星タイタンは、地球より濃い大気と、月より弱い重力をもっています。腕に翼をつければ、自分の力で空を飛べるかもしれないと言われています。</p>
+        <a class="more" href="#/p/saturn">土星への旅を見る</a>
+      </div>
+    </div>
+  </section>
+
+  <section class="block wrap" id="reach">
+    <div class="sh"><div><h2>人類の現在地</h2><p>どの便も、まだ出発できません。人類がいまどこまで来ているかを、星ごとに並べました。</p></div></div>
+    <div class="reach">
+      <div class="rw hd" aria-hidden="true"><span></span><span></span><span class="sc">${SCALE.map((t,i)=>`<span class="sl${i===5?' last':''}" style="left:${((i+1)/6*100).toFixed(1)}%">${t}</span>`).join('')}</span></div>
+      ${P.map(p=>`<div class="rw"><span class="nm">${p.name}</span><span class="ds num">${p.dist}</span><span class="bar" role="img" aria-label="${p.name}：${p.reachSt}。旅行できるまで${5-p.stage}段階">${[0,1,2,3,4].map(i=>`<span class="tk${i<p.stage?' on':''}" style="left:${((i+1)/6*100).toFixed(1)}%"></span>`).join('')}<i style="width:${((p.stage+1)/6*100).toFixed(1)}%"></i></span></div>`).join('')}
+    </div>
+  </section>
+
+  <section class="block wrap">
+    <div class="about">
+      <h2>出発日について</h2>
+      <div>
+        <p>PLANET TRAVEL のツアーは、すべて出発日が決まっていません。人が安全に月・火星・土星へ旅できる技術が、まだ完成していないためです。</p>
+        <p>出発日は、人類の技術が追いついた日に決まります。それまでのあいだ、ご予約はお客さまの「行ってみたい」という気持ちとしてお預かりします。出発のご案内まで、どうぞ楽しみにお待ちください。</p>
+        <p id="pick"></p>
+      </div>
+    </div>
+  </section>`;
+}
+
+/* ---------- planet ---------- */
+function planet(p){
+  const nx=P[(P.indexOf(p)+1)%P.length];
+  const pick=AUTHOR_PICK&&AUTHOR_PICK.id===p.id?`・<b>作った人のおすすめ</b>`:'';
+  return `
+  <div class="wrap">
+    <div class="ptitle">
+      <a class="back" href="#/" data-back aria-label="旅行先一覧に戻る"><i aria-hidden="true">‹</i>旅行先一覧</a>
+      <h1>${p.name}への旅　${p.catch}</h1>
+      <p class="meta">片道 <b>${p.oneway}</b>・出発日 <b>未定</b>${pick}</p>
+    </div>
+    <div class="gal">${p.exps.map((e,k)=>`<div class="ph" role="button" tabindex="0" aria-label="写真を拡大：${e.n}"><img src="${img(e.img,k?1:0)}" alt="${e.n}"></div>`).join('')}</div>
+    <div class="lb" id="lb" hidden role="dialog" aria-modal="true" aria-label="写真"><button type="button" class="lb-x" aria-label="閉じる">×</button><button type="button" class="lb-p" aria-label="前の写真">‹</button><figure><img id="lbi" alt=""><figcaption><span><span class="t" id="lbc"></span><span class="d" id="lbd"></span></span><span class="lb-c num" id="lbn"></span></figcaption></figure><button type="button" class="lb-n" aria-label="次の写真">›</button></div>
+
+    <form class="layout" id="f" novalidate>
+      <div>
+        <div class="sec intro"><p>${p.intro}</p><dl class="facts">${p.facts.map(f=>`<div><dt>${f[0]}</dt><dd class="num">${f[1]}${f[2]?`<small>${f[2]}</small>`:''}</dd></div>`).join('')}</dl></div>
+
+        <div class="sec"><h2>やりたいこと</h2><p class="lead">選んだ順に、旅のしおりへ1日ずつ入ります。</p>
+          <div class="exps">${p.exps.map((e,k)=>`<label class="exp"><input type="checkbox" name="x" value="${k}" ${k<2?'checked':''}><div class="ph"><img src="${img(e.img,1)}" alt="" loading="lazy"><span class="chk" aria-hidden="true"></span></div><strong>${e.n}</strong><p>${e.d}</p></label>`).join('')}</div>
+        </div>
+
+        <div class="sec"><h2>泊まる場所</h2><p class="lead">料金は1名1泊あたりです。</p>
+          <div class="rooms">${p.rooms.map((r,k)=>`<label class="room"><input type="radio" name="r" value="${k}" ${k?'':'checked'}><strong>${r.n}</strong><span class="pr num">${yen(r.p)}<small>1名1泊</small></span><p>${r.d}</p></label>`).join('')}</div>
+        </div>
+
+        <div class="sec"><h2>旅のしおり</h2><p class="lead">地球 ⇄ ${p.name}　出発日：未定</p><div id="bar"></div><ol class="days" id="days" aria-live="polite"></ol></div>
+
+        <div class="sec"><h2>人類の現在地</h2><p class="lead">${p.name}への旅は、まだ出発できません。人類がいまどこまで来ているのか、これまでの歩みと次の一歩です。</p>
+          ${track(p)}
+          <ul class="history">${p.history.map(h=>`<li><b class="num">${h.y}</b><span>${h.t}</span></li>`).join('')}<li class="next"><b class="num">${p.next.y==='未定'?'次は':p.next.y}</b><span>${p.next.t}</span></li></ul>
+        </div>
+
+        <a class="nextp" href="#/p/${nx.id}"><div class="ph"><img src="${img(nx.exps[0].img,1)}" alt="" loading="lazy"></div><div><small>次の旅行先</small><b>${nx.name}への旅</b></div></a>
+      </div>
+
+      <aside class="bk" aria-label="予約">
+        <div class="pp num">${yen(p.fare)} <small>往復／1名</small></div>
+        <p class="dep">出発日：<b>未定</b>（人類の技術が追いついたら決まります）</p>
+        <div class="box">
+          <div class="two"><div class="f"><label for="ng">滞在</label><select id="ng" name="ng">${[3,5,7,14].map(n=>`<option value="${n}" ${n===5?'selected':''}>${n}泊</option>`).join('')}</select></div><div class="f"><label for="pax">人数</label><select id="pax" name="pax">${[1,2,3,4].map(n=>`<option value="${n}">${n}名</option>`).join('')}</select></div></div>
+          <div class="f"><label for="nm">搭乗者名</label><input id="nm" name="nm" maxlength="20" autocomplete="nickname" placeholder="ニックネーム可"></div>
+          <div class="f"><label for="age">いまの年齢（任意）</label><input id="age" name="age" type="number" inputmode="numeric" min="0" max="120" placeholder="帰ってくるときの年齢を計算します"></div>
+        </div>
+        <button class="btn dark" type="button" id="book">この旅を予約する</button>
+        <p class="free">まだ料金は発生しません（架空のサービスです）</p>
+        <div class="brk" id="brk"></div>
+        <p class="err" id="err" role="alert" hidden></p>
+      </aside>
+    </form>
+  </div>`;
+}
+function calc(p,f){
+  const fd=new FormData(f),x=fd.getAll('x').map(Number),pax=+fd.get('pax'),ng=+fd.get('ng'),r=p.rooms[+fd.get('r')];
+  const a=fd.get('age'),age=a===''?null:+a,tot=p.days*2+ng;
+  return {x,pax,ng,r,age,tot,cost:(p.fare+r.p*ng)*pax,nm:(fd.get('nm')||'').trim()};
+}
+function refresh(p){
+  const c=calc(p,$('#f')),pc=v=>(v/c.tot*100).toFixed(2)+'%',stay=c.ng/c.tot*100;
+  $('#brk').innerHTML=`<div><span>往復運賃 × ${c.pax}名</span><span class="num">${yen(p.fare*c.pax)}</span></div><div><span>${c.r.n} × ${c.ng}泊</span><span class="num">${yen(c.r.p*c.ng*c.pax)}</span></div><div><span>旅の全期間</span><span class="num">${dur(c.tot)}</span></div><div class="tot"><span>合計</span><span class="num">${yen(c.cost)}</span></div>`;
+  $('#bar').innerHTML=`<div class="tl" role="img" aria-label="往路${dur(p.days)}、滞在${c.ng}泊、復路${dur(p.days)}"><span class="t" style="width:${pc(p.days)}"></span><span class="s" style="width:${pc(c.ng)}"></span><span class="t" style="width:${pc(p.days)}"></span></div><div class="tll num"><span>往路 ${dur(p.days)}</span><span>滞在 ${c.ng}泊</span><span>復路 ${dur(p.days)}</span></div><p class="tln">${stay<10?`旅の<b>${(100-stay).toFixed(stay<1?1:0)}%</b>は移動の時間です。航行中の過ごし方も、旅の一部。`:'移動より滞在のほうが長い、いちばん「旅行らしい」旅行先です。'}</p>`;
+  const L=[`<li><span class="w">出発</span><span class="d">地球を出発<small>出発日は、人類の技術が追いついたときに決まります</small></span></li>`,`<li><span class="w num">${dur(p.days)}</span><span class="d">${p.name}へ航行<small>${p.cruise}</small></span></li>`,`<li><span class="w">1日目</span><span class="d">到着・${c.r.n}にチェックイン</span></li>`];
+  c.x.slice(0,c.ng).forEach((k,j)=>{const e=p.exps[k];L.push(`<li class="x"><span class="w">${j+2}日目</span><span class="d"><img src="${img(e.img,1)}" alt=""><span>${e.n}</span></span></li>`)});
+  if(c.x.length>c.ng)L.push(`<li class="warn"><span class="w">要調整</span><span class="d">${c.x.length-c.ng}つが日程に入りきりません<small>滞在を延ばすと、すべて楽しめます</small></span></li>`);
+  const ff=Math.min(c.x.length,c.ng)+2,last=c.ng+1;
+  if(ff<last)L.push(`<li><span class="w num">${ff}${ff<last-1?'〜'+(last-1):''}日目</span><span class="d">自由に過ごす<small>窓の外の、地球では見られない空を</small></span></li>`);
+  const ok=c.age!=null&&c.age>=0&&c.age<=120;
+  L.push(`<li><span class="w">${last}日目</span><span class="d">チェックアウト・帰路へ</span></li>`,`<li><span class="w num">${dur(p.days)}</span><span class="d">地球へ航行</span></li>`,`<li><span class="w">帰還</span><span class="d">地球に到着<small>${ok?`帰ってきたとき、あなたは${Math.floor(c.age+c.tot/365)}歳です`:`旅の全期間 ${dur(c.tot)}`}</small></span></li>`);
+  $('#days').innerHTML=L.join('');
+}
+
+/* ---------- pass / trips ---------- */
+function pass(b){
+  const p=byId[b.p],d=new Date(b.at);
+  const tw=encodeURIComponent(`PLANET TRAVELで${p.name}への旅を予約しました。出発日は未定。人類がそこへ行ける日を待っています。`);
+  return `<div class="wrap done">
+    <h1>夢の予約が完了しました</h1>
+    <p>技術が追いついたら、この予約でご案内します。それまでのあいだ、人類の現在地をいっしょに見守りましょう。</p>
+    <article class="pass" aria-label="搭乗券">
+      <div class="ph"><img src="${img(p.exps[0].img)}" alt=""></div>
+      <div class="body">
+        <div class="main">
+          <div class="od"><div class="city"><small>出発地</small>地球</div><div class="arc" aria-hidden="true"></div><div class="city"><small>到着地</small>${p.name}</div></div>
+          <dl>
+            <div><dt>搭乗者</dt><dd>${esc(b.nm||'名前のない旅人')}${b.pax>1?` ほか${b.pax-1}名`:''}</dd></div>
+            <div><dt>出発日</dt><dd class="wait">未定</dd></div>
+            <div><dt>旅の全期間</dt><dd class="num">${dur(b.tot)}</dd></div>
+            <div><dt>宿泊</dt><dd>${b.r}・${b.ng}泊</dd></div>
+            <div style="grid-column:span 2"><dt>旅程</dt><dd>${b.x.length?b.x.join('、'):'現地で決める'}</dd></div>
+          </dl>
+          <div class="waiting"><b>ステータス：人類の到達を待っています</b><br>いま人類は「${STAGES[p.stage]}」まで来ています。次の一歩は、${p.next.y!=='未定'?p.next.y+'年、':''}${p.next.t.replace(/。$/,'')}。${track(p)}</div>
+        </div>
+        <div class="stub"><dl>
+          <div><dt>予約番号</dt><dd class="code">${b.code}</dd></div>
+          <div><dt>予約日</dt><dd class="num">${d.getFullYear()}年${d.getMonth()+1}月${d.getDate()}日</dd></div>
+          <div><dt>合計（架空）</dt><dd class="num">${yenJ(b.cost)}</dd></div>
+          ${b.ra!=null?`<div><dt>帰還時の年齢</dt><dd class="num">${b.ra}歳</dd></div>`:''}
+        </dl></div>
+      </div>
+    </article>
+    <div class="done-actions"><a class="btn dark" href="https://x.com/intent/post?text=${tw}" target="_blank" rel="noopener">予約したことをポストする</a><a class="btn light" href="#/trips">予約の確認へ</a><a class="btn light" href="#/#dest">ほかの旅行先を見る</a></div>
+    <div class="cancel" id="cx"><button type="button" class="lnk" data-cancel="${b.code}">この予約をキャンセルする</button></div>
+  </div>`;
+}
+let CANCELED=null;
+document.addEventListener('click',e=>{
+  const c=e.target.closest('[data-cancel]');
+  if(c){const code=c.dataset.cancel;$('#cx').innerHTML=`<p class="q">予約番号 ${esc(code)} をキャンセルしますか？</p><div class="acts"><button type="button" class="btn dark" data-cancel-yes="${esc(code)}">キャンセルする</button><button type="button" class="btn light" data-cancel-no="${esc(code)}">やめる</button></div>`;return}
+  const y=e.target.closest('[data-cancel-yes]');
+  if(y){const code=y.dataset.cancelYes;save(load().filter(x=>x.code!==code));badge();CANCELED=code;go('#/trips');return}
+  const n=e.target.closest('[data-cancel-no]');
+  if(n){$('#cx').innerHTML=`<button type="button" class="lnk" data-cancel="${esc(n.dataset.cancelNo)}">この予約をキャンセルする</button>`}
+});
+function trips(){
+  const l=load().slice().reverse();
+  const note=CANCELED?`<p class="notice" role="status">予約番号 ${esc(CANCELED)} をキャンセルしました。</p>`:'';CANCELED=null;
+  return `<section class="wrap" style="padding-top:48px"><div class="sh"><div><h2>予約の確認</h2><p>このブラウザで予約した旅です。どの便も、出発日のお知らせを待っています。</p></div></div>
+  ${note}
+  ${l.length?`<div class="trips">${l.map(b=>{const p=byId[b.p];return `<a class="trip" href="#/pass/${b.code}"><img src="${img(p.exps[0].img,1)}" alt=""><span><strong>${p.name}への旅</strong><small class="num">${b.code}・${b.pax}名・${b.ng}泊・出発日 未定</small></span><span class="st">到達待ち</span></a>`}).join('')}</div>`
+  :`<div class="empty">まだ予約はありません。行ってみたい星を見つけたら、最初の一枚を予約しましょう。<br><a class="btn dark" href="#/#dest">旅行先を見る</a></div>`}</section>`;
+}
+
+/* ---------- router ---------- */
+function toTop(){window.scrollTo({top:0,left:0,behavior:'instant'})}
+let CUR=location.hash||'#/';
+let homeY=null,restore=false;
+const pageOf=h=>h.replace(/^#\/?/,'').split('#')[0];
+function go(h,back){
+  const from=pageOf(CUR),to=pageOf(h),anc=h.split('#')[2];
+  if(from===''){homeY=scrollY}
+  CUR=h;try{history.pushState(null,'',h)}catch(e){}
+  if(from===''&&to===''&&anc){const t=document.getElementById(anc);if(t){t.scrollIntoView({behavior:'smooth'});return}}
+  restore=!!back;route();
+}
+document.addEventListener('click',e=>{const a=e.target.closest('a[href^="#"]');if(!a)return;e.preventDefault();go(a.getAttribute('href'),a.hasAttribute('data-back'))});
+function hdr(){const h=$('header.site');h.classList.toggle('clear',pageOf(CUR)===''&&scrollY<40)}
+addEventListener('scroll',hdr,{passive:true});
+function route(){
+  const app=$('#app'),[path,anchor]=CUR.replace(/^#\/?/,'').split('#'),parts=path.split('/').filter(Boolean);
+  setTimeout(hdr,0);document.body.style.overflow='';clearInterval(HT);
+  if(parts[0]==='p'&&byId[parts[1]]){
+    const p=byId[parts[1]];app.innerHTML=planet(p);document.title=`${p.name}への旅｜PLANET TRAVEL`;
+    const f=$('#f');refresh(p);f.addEventListener('input',()=>refresh(p));f.addEventListener('change',()=>refresh(p));f.addEventListener('submit',e=>e.preventDefault());
+    $('#book').addEventListener('click',()=>{const c=calc(p,f),er=$('#err');
+      if(c.age!=null&&(!Number.isFinite(c.age)||c.age<0||c.age>120)){er.textContent='年齢は0〜120の数字で入力してください。';er.hidden=false;$('#age').focus();return}
+      er.hidden=true;const code='PT-'+p.id.slice(0,3).toUpperCase()+'-'+Math.random().toString(36).slice(2,7).toUpperCase();
+      save([...load(),{code,p:p.id,pax:c.pax,ng:c.ng,r:c.r.n,x:c.x.map(k=>p.exps[k].n),nm:c.nm,tot:c.tot,cost:c.cost,ra:c.age!=null?Math.floor(c.age+c.tot/365):null,at:Date.now()}]);
+      badge();go('#/pass/'+code)});
+    toTop();
+  }else if(parts[0]==='pass'){const b=load().find(x=>x.code===parts[1]);app.innerHTML=b?pass(b):trips();document.title='搭乗券｜PLANET TRAVEL';toTop()}
+  else if(parts[0]==='trips'){app.innerHTML=trips();document.title='予約の確認｜PLANET TRAVEL';toTop()}
+  else{app.innerHTML=home();heroStart();document.title='PLANET TRAVEL｜出発日未定の、宇宙旅行。';
+    if(AUTHOR_PICK&&byId[AUTHOR_PICK.id])$('#pick').innerHTML=`作った人のおすすめは<a href="#/p/${AUTHOR_PICK.id}">${byId[AUTHOR_PICK.id].name}</a>。${esc(AUTHOR_PICK.note||'')}`;
+    if(anchor){const t=document.getElementById(anchor);t&&t.scrollIntoView({behavior:'instant'})}else if(restore&&homeY!=null){window.scrollTo({top:homeY,behavior:'instant'})}else toTop();restore=false}
+}
+let LB={p:null,i:0};
+const RM=matchMedia('(prefers-reduced-motion: reduce)').matches;
+function lbShow(fade){const e=LB.p.exps[LB.i],im=$('#lbi');im.src=img(e.img);im.alt=e.n;$('#lbc').textContent=e.n;$('#lbd').textContent=e.d;$('#lbn').textContent=`${LB.i+1} / ${LB.p.exps.length}`;if(fade&&!RM)im.animate([{opacity:0,transform:'scale(.985)'},{opacity:1,transform:'none'}],{duration:320,easing:'cubic-bezier(.2,.8,.2,1)'})}
+function lbOpen(ph,p,i){
+  LB={p,i};lbShow();const l=$('#lb'),im=$('#lbi');l.hidden=false;document.body.style.overflow='hidden';
+  requestAnimationFrame(()=>l.classList.add('on'));$('#lb .lb-x').focus({preventScroll:true});
+  if(RM)return;
+  const run=()=>{const a=ph.getBoundingClientRect(),b=im.getBoundingClientRect();if(!b.width)return;
+    const s=Math.max(a.width/b.width,a.height/b.height),dx=a.left+a.width/2-(b.left+b.width/2),dy=a.top+a.height/2-(b.top+b.height/2);
+    im.animate([{transform:`translate(${dx}px,${dy}px) scale(${s})`,opacity:.4},{transform:'none',opacity:1}],{duration:460,easing:'cubic-bezier(.2,.8,.2,1)'})};
+  im.complete&&im.naturalWidth?run():im.addEventListener('load',run,{once:true});
+}
+function lbClose(){const l=$('#lb');if(!l||l.hidden)return;l.classList.remove('on');document.body.style.overflow='';
+  if(!RM)$('#lbi').animate([{transform:'none',opacity:1},{transform:'scale(.96)',opacity:0}],{duration:240,easing:'ease-in'});
+  setTimeout(()=>{l.hidden=true},RM?0:260)}
+document.addEventListener('click',e=>{
+  const ph=e.target.closest('.gal .ph');
+  if(ph){const p=byId[pageOf(CUR).split('/')[1]];if(!p)return;lbOpen(ph,p,[...ph.parentNode.children].indexOf(ph));return}
+  const lb=e.target.closest('#lb');if(!lb)return;
+  const n=LB.p.exps.length;
+  if(e.target.closest('.lb-x')||e.target===lb||e.target.tagName==='FIGURE'){lbClose();return}
+  if(e.target.closest('.lb-p')){LB.i=(LB.i-1+n)%n;lbShow(1)}
+  if(e.target.closest('.lb-n')){LB.i=(LB.i+1)%n;lbShow(1)}
+});
+addEventListener('keydown',e=>{
+  if((e.key==='Enter'||e.key===' ')&&e.target.matches&&e.target.matches('.gal .ph')){e.preventDefault();e.target.click();return}
+  const l=$('#lb');if(!l||l.hidden)return;
+  if(e.key==='Escape')lbClose();if(e.key==='ArrowLeft')$('#lb .lb-p').click();if(e.key==='ArrowRight')$('#lb .lb-n').click();
+});
+addEventListener('popstate',()=>{const from=pageOf(CUR);CUR=location.hash||'#/';const to=pageOf(CUR);if(from===''&&to===''){const a=CUR.split('#')[2],t=a&&document.getElementById(a);t?t.scrollIntoView({behavior:'smooth'}):window.scrollTo({top:0,behavior:'smooth'});return}if(from==='')homeY=scrollY;restore=to==='';route()});
+badge();route();
+</script>
+</body>
+</html>
